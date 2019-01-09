@@ -5,3 +5,4 @@ __pycache__/
 
 # VsCode
 .vscode/
+*.code-workspace
