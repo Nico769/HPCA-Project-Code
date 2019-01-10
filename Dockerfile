@@ -8,6 +8,6 @@ RUN apt-get update -y && \
     apt-get install -y mpich libatlas-base-dev && \
     apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pip install numpy mpi4py
+RUN pip install numpy mpi4py pandas
 
 CMD ["/bin/bash"]

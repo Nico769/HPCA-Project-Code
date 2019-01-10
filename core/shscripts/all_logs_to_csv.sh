@@ -1,5 +1,5 @@
 #!/bin/bash
-for FILENAME in $HOME/core/logparsers/logs/*.log; do
+for FILENAME in $HOME/cloud/core/logparsers/logs/*.log; do
     f="$(basename -- $FILENAME)"
-    python3 $HOME/core/logparsers/parser.py "$f"
+    python3 $HOME/cloud/core/logparsers/parser.py "$f"
 done
