@@ -102,7 +102,7 @@ if __name__ == "__main__":
         estimated_pi = 4*(tot_points_in / total_num_trials)
         # compute the error
         error_pi = np.abs(np.pi - estimated_pi)
-        print("End")
+        print("End", flush=True)
         # print("DEBUG: slowest processor wall-clock time: {:.6f}".format(longest_elapsed))
         # print("DEBUG: tot_points_in_buff: ", tot_points_in)
         # print("DEBUG: Pi is approximately: {:.6f}".format(estimated_pi))
