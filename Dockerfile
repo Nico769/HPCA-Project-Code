@@ -1,6 +1,6 @@
 FROM python:3.6-jessie
 
-LABEL Nicola Landolfi <nicola.landolfi@student.unisi.it>
+LABEL maintainer = Nicola Landolfi <nicola.landolfi@student.unisi.it>
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
