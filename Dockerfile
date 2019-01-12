@@ -2,12 +2,15 @@ FROM python:3.6-jessie
 
 LABEL maintainer = Nicola Landolfi <nicola.landolfi@student.unisi.it>
 
-RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get install -y apt-utils && \
-    apt-get install -y mpich libatlas-base-dev && \
-    apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY requirements.txt /
 
-RUN pip install numpy mpi4py pandas
+RUN apt-get update -y && \
+    apt-get install -y mpich libatlas-base-dev && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN pip install -r /requirements.txt
+
+COPY core/ /app
+WORKDIR /app
 
 CMD ["/bin/bash"]
