@@ -1,82 +1,97 @@
+"""Matrix multiplication
 
-""" execute with anaconda prompt from the directory of matrixmul.py
-    
-    mpi4py and Microsoft MPI must be installed:
-        https://www.microsoft.com/en-us/download/details.aspx?id=57467
-    
-    EVERY TIME I EXECUTE THE CODE, AN ERROR APPEARS, BUT IT DOESN'T INTERFERE
-    WITH THE RESULT OF THE COMPUTATION. I HAVEN'T FOUND A SOLUTION YET
+   Multiplies two square matrices A and B, storing the result in matrix C.
 
-    with the code:    mpiexec -n NUMERO DI NODI python -m matrixmul.py NUMERO DI RIGHE (O COLONNE, MATRICE QUADRATA)
+   Usage:
+        python matmul.py [matrix_dimension]
+
+        Options:
+               -matrix_dimension    the dimension of the square matricies.
+    
+   The names of the matrices start with an uppercase.
+	
 """
 from mpi4py import MPI
 import numpy as np
+from time import time
 from sys import argv
 
-def matrixmul(A, B, Partial, Rank, Tile_width, Row_dim, Col_dim):
-    #count=0  #to get the percentage of completition of the operation
-    offset=Tile_width*(Rank)
-    for i in range(Tile_width):
-        for j in range(Row_dim):
-            for k in range(Col_dim):
-                Partial[i+offset][j] += A[i+offset][k] * B[k][j] 
+def matrixmul(A, B, tile_width, mat_dim):
+    offset=tile_width*(comm.Get_rank())
+    for i in range(tile_width):
+        for j in range(mat_dim):
+            for k in range(mat_dim):
+                Partial[i+offset][j] += A[i+offset][k] * B[k][j]
+    return Partial
+
+if __name__ == "__main__":
+    # Check if the matricies dimension has been supplied via
+    # the CLI. If not, use 128 as default value.
+    mat_dim = int(argv[1]) if len(argv) > 1 else 128
+    # Rename default channel for convenience
+    comm = MPI.COMM_WORLD
+    # Get the number of nodes on comm channel
+    num_nodes = comm.Get_size()
+    # Get their rank
+    rank = comm.Get_rank()
+    # Compute tile_width
+    tile_width = np.round(mat_dim / num_nodes).astype(int)
+    # Fill the partial matrix with zeros
+    Partial = np.zeros((mat_dim,mat_dim))
+    # Fill the result matrix of the parallel execution with zeros
+    Result = np.zeros((mat_dim,mat_dim))
+    # Declare an empty matrix, A
+    A = np.empty((mat_dim,mat_dim))
+    # Declare an empty matrix, B
+    B = np.empty((mat_dim,mat_dim))
+
+    if(rank==0):
+        print("Start", flush=True)
+        # Init the first matrix, A, with random values
+        A = np.random.random((mat_dim,mat_dim))
+        # Init the second matrix, B, with random values
+        B = np.random.random((mat_dim,mat_dim))
+
+    # Broadcast A and B to worker nodes
+    comm.Bcast(A,root=0)
+    comm.Bcast(B,root=0)
+    # Record now as the starting time
+    start = MPI.Wtime()
+    # Launch the matrix multiplication kernel
+    Partial = matrixmul(A,B,tile_width,mat_dim)
+    # Merge the blocks of matrix frome the processes in a single matrix
+    comm.Reduce([Partial, MPI.DOUBLE],[Result, MPI.DOUBLE],op=MPI.SUM,root=0)
+    # Record now as the finishing time
+    finish = MPI.Wtime()
+    # Do a MIN reduction for the starting times of each node
+    real_start = comm.reduce(start,op=MPI.MIN,root=0)
+    # Do a MAX reduction for the finishing times of each node
+    real_finish = comm.reduce(finish,op=MPI.MAX,root=0)
+
+    if (rank==0):
+        # Fill the C matrix with zeros
+        C = np.zeros((mat_dim,mat_dim))
+        # Record now as the starting time for the serial matmul
+        serial_start = time()
+        for i in range(mat_dim):
+            for j in range(mat_dim):
+                for k in range(mat_dim):
+                    C[i][j] += A[i][k] * B[k][j]
+        # Record now as the finishing time for the serial matmul
+        serial_finish = time()
+
+        # Compare the C matrix (serial) with the Result matrix (parallel execution) 
+        P = np.subtract(C,Result)
                 
-        #count+=1
-        #print(count/(Mat_dim^2)*100,"%")
-
-Row_dim = int(argv[1]) if len(argv) > 1 else 128
-Col_dim = int(argv[2]) if len(argv) > 1 else 128
-comm = MPI.COMM_WORLD
-# Get the number of nodes on comm channel
-num_nodes = comm.Get_size()
-# Get their rank
-Rank = comm.Get_rank()
-# Compute tile_width
-Tile_width = np.round(Row_dim / num_nodes).astype(int)
-Partial=np.zeros((Row_dim,Row_dim))   #partial matrix initialization
-Result=np.zeros((Row_dim,Row_dim))  #final matrix initialization
-
-if(Rank==0):   
-    A=np.zeros((Row_dim,Col_dim))   #first matrix initialization
-    B=np.zeros((Col_dim,Row_dim))   #second matrix initialization    
-    #C=np.zeros((Row_dim,Row_dim))   #check matrix initialization
-    #P=np.zeros((Row_dim,Row_dim))   #check matrix initialization 2
-    #generating matrix 1
-    for i in range(Row_dim):
-        for j in range(Col_dim):
-            A[i][j]=np.random.rand()
-    #generating matrix 2
-    for i in range(Col_dim):
-        for j in range(Row_dim):
-            B[i][j]=np.random.rand()
-    #generating product matrix
-    #for i in range(Row_dim):
-    #    for j in range(Row_dim):
-    #        for k in range(Col_dim):
-    #            C[i][j]+= A[i][k] * B[k][j] 
-#uncomment the lines(45-48) to have a serial execution of the matrixmul 
-    for i in range(1,num_nodes):
-        comm.send(A,dest=i, tag=11)
-        comm.send(B,dest=i, tag=12)
-else:
-    A=comm.recv(source=0, tag=11)
-    B=comm.recv(source=0, tag=12)
-
-comm.Barrier() #waiting for all the processes to have the same data
-start = MPI.Wtime()
-#execute matrix multiply
-matrixmul(A,B,Partial,Rank, Tile_width, Row_dim, Col_dim)
-comm.Barrier()
-#merge the blocks of matrix frome the processes in a single matrix
-comm.Reduce([Partial, MPI.DOUBLE],[Result, MPI.DOUBLE],op=MPI.SUM,root=0)
-# Record the time when the function is done
-finish = MPI.Wtime()
-#check the result and/or print time elapsed
-if (Rank==0):
-#checking with product matrix C, needs lines(45-48)
-    #for i in range(Row_dim):
-    #    for j in range(Col_dim):
-    #        for k in range(Row_dim):
-    #            P[i][j]=C[i][j]-Result[i][j]
-    #print(P)
-    print("time elapsed:",finish - start,"s")
+        if(np.sum(P) != 0):
+            print("Serial and parallel executions provide different results, exiting..")
+            exit()
+        else:
+            tot_serial = serial_finish - serial_start
+            # Compute the total execution time by subtracting
+            # the starting time of the first entering node
+            # to the finishing time of the last exiting node
+            tot_parallel = real_finish - real_start
+            print("Total wall-clock time elapsed for serial execution {:.6f}".format(tot_serial))
+            print("Total wall-clock time elapsed for parallel execution {:.6f}".format(tot_parallel))
+            print("End", flush=True)
