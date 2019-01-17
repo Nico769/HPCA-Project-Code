@@ -19,6 +19,14 @@ def parse_pid_time(line):
         return matched.group(1), matched.group(2)
     else:
         return None
+
+def parse_serial_or_parallel_time(line):
+    '''Parse 'serial' or 'parallel' keywords and the execution time using Regular Expressions'''
+    matched = re.compile(r'(serial|parallel).*?((\d{1,6}\.\d{1,6}))').search(line)
+    if has_mo_match(matched):
+        return matched.group(1), matched.group(2)
+    else:
+        return None
         
 def parse_end(line):
     '''Parse End marker using Regular Expressions'''
@@ -67,6 +75,15 @@ def log_file_to_dataframe(log_content_list):
             # add the process id and its time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][pid] = time
+        elif parse_serial_or_parallel_time(line) is not None:
+            # line contains serial/parallel word and execution time
+            # (matmul.py only)
+            result = parse_serial_or_parallel_time(line)
+            execution_type = result[0]
+            time = result[1]
+            # add the execution type and the time to measurements dict
+            # having measurement_counter index. This yelds to a dict of dicts
+            measurements[measurement_counter][execution_type] = time
         elif parse_end(line) is not None:
             # line contains 'End' marker, end of this measurement reached
             measurement_counter += 1
