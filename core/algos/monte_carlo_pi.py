@@ -4,7 +4,7 @@
    MPI's default channel is used.
 
    Usage:
-        python main.py [total_num_trials]
+        python monte_carlo_pi.py [total_num_trials]
         
         Options:
                -total_num_trials    the total number of trials ( (x,y) points) for the simulation.
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # Init send (i.e. elapsed_buff) and receive (i.e. longest_elapsed_buff) buffer for MAX reduction
     # as a one dimensional zero-filled arrays
     elapsed_buff         = np.zeros(1,dtype=np.float64)
-    # longest_elapsed_buff = np.zeros(1,dtype=np.float64)
+    longest_elapsed_buff = np.zeros(1,dtype=np.float64)
     # Get start time
     start = MPI.Wtime()
     # Compute (x,y) random points which fall inside the circle
@@ -79,12 +79,16 @@ if __name__ == "__main__":
     finish = MPI.Wtime()
     # Compute the time delta
     elapsed_buff[0] = (finish - start)
-    # Each processor prints its wall-clock time
-    print("Processor {0} finished in {1:.6f}s.".format(rank,elapsed_buff[0]), flush=True)
+
+    #######################################################################################
+    # If needed, print the wall-clock time for each processor
+    # print("Processor {0} finished in {1:.6f}s.".format(rank,elapsed_buff[0]), flush=True)
+    #######################################################################################
+
     # Do a MAX reduction to record the slowest processor
-    # comm.Reduce([elapsed_buff, MPI.DOUBLE],[longest_elapsed_buff, MPI.DOUBLE],op=MPI.MAX,root=0)
+    comm.Reduce([elapsed_buff, MPI.DOUBLE],[longest_elapsed_buff, MPI.DOUBLE],op=MPI.MAX,root=0)
     # Get rid of the array, just need a number
-    # longest_elapsed = longest_elapsed_buff[0]
+    longest_elapsed = longest_elapsed_buff[0]
     # Init send (i.e. points_in_buff) and receive (i.e. tot_points_in_buff) buffer
     # for SUM reduction
     points_in_buff     = np.zeros(1,dtype=np.int32)
@@ -98,15 +102,19 @@ if __name__ == "__main__":
     tot_points_in = tot_points_in_buff[0]
     # Master node estimates pi
     if rank == 0:
-        # estimate pi according to 4*(total points in the circle) / overall trials)
-        estimated_pi = 4*(tot_points_in / total_num_trials)
-        # compute the error
-        error_pi = np.abs(np.pi - estimated_pi)
+        # print the slowest processor
+        print("Slowest processor wall-clock time: {:.6f}s".format(longest_elapsed), flush=True)
         print("End", flush=True)
-        # print("DEBUG: slowest processor wall-clock time: {:.6f}".format(longest_elapsed))
-        # print("DEBUG: tot_points_in_buff: ", tot_points_in)
+
+        ############################################################################
+        # If needed, print the estimated pi and the estimation error
+        # estimate pi according to 4*(total points in the circle) / overall trials)
+        # estimated_pi = 4*(tot_points_in / total_num_trials)
+        # compute the error
+        # error_pi = np.abs(np.pi - estimated_pi)
         # print("DEBUG: Pi is approximately: {:.6f}".format(estimated_pi))
         # print("DEBUG: Error is: {:.6f}".format(error_pi))
+        ############################################################################
 
     # No need to MPI_Finalize() since mpi4py
     # implements an exit hook who does the job for us
