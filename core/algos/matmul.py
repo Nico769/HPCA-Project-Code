@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Declare an empty matrix, B
     B = np.empty((mat_dim,mat_dim))
 
-    if(rank==0):
+    if rank == 0:
         print("Start", flush=True)
         # Init the first matrix, A, with random values
         A = np.random.random((mat_dim,mat_dim))
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # Do a MAX reduction for the finishing times of each node
     real_finish = comm.reduce(finish,op=MPI.MAX,root=0)
 
-    if (rank==0):
+    if rank == 0:
         # Fill the C matrix with zeros
         C = np.zeros((mat_dim,mat_dim))
         # Record now as the starting time for the serial matmul
@@ -83,15 +83,18 @@ if __name__ == "__main__":
         # Compare the C matrix (serial) with the Result matrix (parallel execution) 
         P = np.subtract(C,Result)
                 
-        if(np.sum(P) != 0):
+        if np.sum(P) != 0:
             print("Serial and parallel executions provide different results, exiting..")
             exit()
         else:
             tot_serial = serial_finish - serial_start
-            # Compute the total execution time by subtracting
+            # Compute the total parallel execution time by subtracting
             # the starting time of the first entering node
             # to the finishing time of the last exiting node
             tot_parallel = real_finish - real_start
-            print("Total wall-clock time elapsed for serial execution {:.6f}".format(tot_serial))
-            print("Total wall-clock time elapsed for parallel execution {:.6f}".format(tot_parallel))
+            print("Total wall-clock time elapsed for serial execution {:.6f}".format(tot_serial), flush=True)
+            # Even though we computed the parallel execution time
+            # don't show it if we only have one processor/node
+            if comm.Get_size() > 1:
+                print("Total wall-clock time elapsed for parallel execution {:.6f}".format(tot_parallel), flush=True)
             print("End", flush=True)
