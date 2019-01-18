@@ -12,16 +12,18 @@ def has_mo_match(matched_object):
     else:
         return False
         
-def parse_pid_time(line):
-    '''Parse process id and its execution time using Regular Expressions'''
-    matched = re.compile(r'\s(\d+).*?(\d{1,6}\.\d{1,6})').search(line)
+def parse_monte_carlo_time(line):
+    '''Parse the slowest processor and its execution time 
+       for the monte_carlo_pi algorithm using Regular Expressions'''
+    matched = re.compile(r'time\:\s(\d{1,6}\.\d{1,6})').search(line)
     if has_mo_match(matched):
-        return matched.group(1), matched.group(2)
+        return matched.group(1)
     else:
         return None
 
-def parse_serial_or_parallel_time(line):
-    '''Parse 'serial' or 'parallel' keywords and the execution time using Regular Expressions'''
+def parse_matmul_exec_type_time(line):
+    '''Parse 'serial' or 'parallel' keywords and the execution time
+       for the matmul algorithm using Regular Expressions'''
     matched = re.compile(r'(serial|parallel).*?((\d{1,6}\.\d{1,6}))').search(line)
     if has_mo_match(matched):
         return matched.group(1), matched.group(2)
@@ -67,18 +69,16 @@ def log_file_to_dataframe(log_content_list):
     # keep track of the number of measurements in the log file
     measurement_counter = 1
     for line in log_content_list:
-        if parse_pid_time(line) is not None:
-            # line contains process id and time, let's save them
-            result = parse_pid_time(line)
-            pid = 'CPU ' + result[0]
-            time = result[1]
-            # add the process id and its time to measurements dict
+        if parse_monte_carlo_time(line) is not None:
+            # line contains the time of the slowest processor, let's save it
+            time = parse_monte_carlo_time(line)
+            slowest_label = 'Slowest'
+            # add the Slowest label and the parsed time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
-            measurements[measurement_counter][pid] = time
-        elif parse_serial_or_parallel_time(line) is not None:
-            # line contains serial/parallel word and execution time
-            # (matmul.py only)
-            result = parse_serial_or_parallel_time(line)
+            measurements[measurement_counter][slowest_label] = time
+        elif parse_matmul_exec_type_time(line) is not None:
+            # line contains serial/parallel keyword and the execution time
+            result = parse_matmul_exec_type_time(line)
             execution_type = result[0]
             time = result[1]
             # add the execution type and the time to measurements dict
