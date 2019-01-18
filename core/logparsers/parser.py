@@ -130,7 +130,7 @@ print('Creating a CSV file:', csv_filename)
 log_content_list = []
 # construct the correct path for the logs folder. Please note the hardcoded folders!
 home_folder_env = os.environ['HOME']
-logs_folder = home_folder_env + '/' + 'cloud/core/logparsers/logs' + '/'
+logs_folder = os.path.join(home_folder_env, 'cloud/core/logparsers/logs/')
 # try to create the logs folder if it doesn't exist.
 # Note that os.mkdir creates the child folder (e.g. logs) only!
 if not os.path.exists(logs_folder):
@@ -148,7 +148,7 @@ log_content_list = list(filter(None, log_content_list))
 # convert the relevant log file's content to a DataFrame
 df = log_file_to_dataframe(log_content_list)
 # construct the correct path for the csv folder. Please note the hardcoded folders!
-csv_folder = home_folder_env + '/' + 'cloud/core/logparsers/csv' + '/'
+csv_folder = os.path.join(home_folder_env, 'cloud/core/logparsers/csv/')
 # try to create the csv folder if it doesn't exist.
 # Note that os.mkdir creates the child folder (e.g. csv) only!
 if not os.path.exists(csv_folder):
