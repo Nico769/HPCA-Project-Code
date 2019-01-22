@@ -56,17 +56,23 @@ if __name__ == "__main__":
     comm.Bcast(A,root=0)
     comm.Bcast(B,root=0)
     # Record now as the starting time
-    start = MPI.Wtime()
+    parallel_start = MPI.Wtime()
     # Launch the matrix multiplication kernel
     Partial = matrixmul(A,B,tile_width,mat_dim)
     # Merge the blocks of matrix frome the processes in a single matrix
     comm.Reduce([Partial, MPI.DOUBLE],[Result, MPI.DOUBLE],op=MPI.SUM,root=0)
     # Record now as the finishing time
-    finish = MPI.Wtime()
-    # Do a MIN reduction for the starting times of each node
-    real_start = comm.reduce(start,op=MPI.MIN,root=0)
-    # Do a MAX reduction for the finishing times of each node
-    real_finish = comm.reduce(finish,op=MPI.MAX,root=0)
+    parallel_finish = MPI.Wtime()
+    # Init send (i.e. elapsed_buff) and receive (i.e. longest_elapsed_buff) buffer for MAX reduction
+    # as a one dimensional zero-filled arrays
+    elapsed_buff         = np.zeros(1,dtype=np.float64)
+    longest_elapsed_buff = np.zeros(1,dtype=np.float64)
+    # Compute the time delta
+    elapsed_buff[0] = (parallel_finish - parallel_start)
+    # Do a MAX reduction to record the slowest processor
+    comm.Reduce([elapsed_buff, MPI.DOUBLE],[longest_elapsed_buff, MPI.DOUBLE],op=MPI.MAX,root=0)
+    # Get rid of the array, just need a number
+    tot_parallel = longest_elapsed_buff[0]
 
     if rank == 0:
         # Fill the C matrix with zeros
@@ -88,13 +94,9 @@ if __name__ == "__main__":
             exit()
         else:
             tot_serial = serial_finish - serial_start
-            # Compute the total parallel execution time by subtracting
-            # the starting time of the first entering node
-            # to the finishing time of the last exiting node
-            tot_parallel = real_finish - real_start
             print("Total wall-clock time elapsed for serial execution {:.6f}".format(tot_serial), flush=True)
-            # Even though we computed the parallel execution time
-            # don't show it if we only have one processor/node
+            # Even though the parallel execution time has been calculated
+            # don't show it if there is only one processor/node
             if comm.Get_size() > 1:
                 print("Total wall-clock time elapsed for parallel execution {:.6f}".format(tot_parallel), flush=True)
             print("End", flush=True)

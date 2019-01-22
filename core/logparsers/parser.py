@@ -72,14 +72,14 @@ def log_file_to_dataframe(log_content_list):
         if parse_monte_carlo_time(line) is not None:
             # line contains the time of the slowest processor, let's save it
             time = parse_monte_carlo_time(line)
-            slowest_label = 'Slowest'
+            slowest_label = 'slowest_node_mc_pi'
             # add the Slowest label and the parsed time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][slowest_label] = time
         elif parse_matmul_exec_type_time(line) is not None:
             # line contains serial/parallel keyword and the execution time
             result = parse_matmul_exec_type_time(line)
-            execution_type = result[0]
+            execution_type = result[0] + '_matmul'
             time = result[1]
             # add the execution type and the time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
