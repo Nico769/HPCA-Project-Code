@@ -131,8 +131,7 @@ log_content_list = []
 # construct the correct path for the logs folder. Please note the hardcoded folders!
 home_folder_env = os.environ['HOME']
 logs_folder = os.path.join(home_folder_env, 'cloud/core/logparsers/logs/')
-# try to create the logs folder if it doesn't exist.
-# Note that os.mkdir creates the child folder (e.g. logs) only!
+# if the logs folder can't be found on logs_folder path exit gracefully
 if not os.path.exists(logs_folder):
     print('Ops! Logs folder can\'t be found at', logs_folder)
     print('Exiting...')
