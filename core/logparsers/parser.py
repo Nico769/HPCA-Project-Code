@@ -4,6 +4,10 @@ import re
 import os
 import pandas as pd
 
+# global variable for the number of MPI nodes
+glob_num_nodes = 0
+# constant label for the number of MPI nodes
+nodes_label = 'nodes_number'
 
 def has_mo_match(matched_object):
     '''Determine if matched_object is None or not'''
@@ -57,6 +61,9 @@ def sanitize_filename(name):
     # tokenized_name should be like this: ['mpi', '6', '100']
     # which means the csv_filename is going to be: 'mpi.6.100.csv'
     csv_filename = '{0}.{1}.{2}.csv'.format(tokenized_name[0], tokenized_name[1], tokenized_name[2])
+    # Store the tokenized number of MPI nodes
+    global glob_num_nodes
+    glob_num_nodes = tokenized_name[1]
     # return True and csv_filename since the validation has been successful
     return [True, csv_filename]
 
@@ -76,6 +83,8 @@ def log_file_to_dataframe(log_content_list):
             # add the Slowest label and the parsed time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][slowest_label] = time
+            # and the nodes_number label too
+            measurements[measurement_counter][nodes_label] = glob_num_nodes
         elif parse_matmul_exec_type_time(line) is not None:
             # line contains serial/parallel keyword and the execution time
             result = parse_matmul_exec_type_time(line)
@@ -84,6 +93,8 @@ def log_file_to_dataframe(log_content_list):
             # add the execution type and the time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][execution_type] = time
+            # and the nodes_number label too
+            measurements[measurement_counter][nodes_label] = glob_num_nodes
         elif parse_end(line) is not None:
             # line contains 'End' marker, end of this measurement reached
             measurement_counter += 1
@@ -154,6 +165,6 @@ if not os.path.exists(csv_folder):
     print('csv folder doesn\'t exist. Creating one at \'{0}\''.format(csv_folder))
     os.mkdir(csv_folder)
 # convert this df to a csv file
-df.to_csv(csv_folder + csv_filename, encoding='utf-8-sig')
+df.to_csv(csv_folder + csv_filename, encoding='utf-8-sig', sep=';')
 print('\'{0}\' created'.format(csv_filename))
 print('Done.\n')
