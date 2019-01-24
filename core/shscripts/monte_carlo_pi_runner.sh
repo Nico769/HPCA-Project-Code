@@ -5,6 +5,7 @@ for TRIALS in 1000000 100000000; do
 	scientific_trials=$(printf "%.e\n" ${TRIALS})
 	for TEST in 1 2 3 4; do
 		for NODES in 1 16 32; do
+			echo "Running test number $TEST with $NODES nodes and $TRIALS trials..."
 			mpiexec -f $HOME/cloud/machinefile -n $NODES python3 $HOME/cloud/core/algos/monte_carlo_pi.py $TRIALS >> $HOME/cloud/core/logparsers/logs/mpi.$NODES.$scientific_trials.log
 		done 
 	done
