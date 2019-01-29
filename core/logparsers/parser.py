@@ -6,8 +6,14 @@ import pandas as pd
 
 # global variable for the number of MPI nodes
 glob_num_nodes = 0
+# global variable for monte carlo 'trials' or matmul 'square matricies dimension'
+glob_trials_matdim = 0
 # constant label for the number of MPI nodes
 nodes_label = 'nodes_number'
+# constant label for the square matricies dimension
+matdim_label = 'mat_dim'
+# constant label for monte carlo trials
+trials_label = 'trials'
 
 def has_mo_match(matched_object):
     '''Determine if matched_object is None or not'''
@@ -58,12 +64,17 @@ def sanitize_filename(name):
         print('DEBUG: tokenized_name doesn\'t contain log keyword')
         return err_list
     
-    # tokenized_name should be like this: ['mpi', '6', '100']
-    # which means the csv_filename is going to be: 'mpi.6.100.csv'
+    # monte carlo pi: tokenized_name should be like this: ['mpi', '6', '1e+06']
+    # which means the csv_filename is going to be: 'mpi.6.1e+06.csv'
+    # matmul: tokenized_name should be like this: ['mpi', '6', '512']
+    # which means the csv_filename is going to be: 'mpi.6.512.csv'
     csv_filename = '{0}.{1}.{2}.csv'.format(tokenized_name[0], tokenized_name[1], tokenized_name[2])
-    # Store the tokenized number of MPI nodes
+    # store the tokenized number of MPI nodes
     global glob_num_nodes
     glob_num_nodes = tokenized_name[1]
+    # store the tokenized monte carlo trials or matmul matricies dimension
+    global glob_trials_matdim
+    glob_trials_matdim = tokenized_name[2]
     # return True and csv_filename since the validation has been successful
     return [True, csv_filename]
 
@@ -83,8 +94,10 @@ def log_file_to_dataframe(log_content_list):
             # add the Slowest label and the parsed time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][slowest_label] = time
-            # and the nodes_number label too
+            # and the number of MPI nodes
             measurements[measurement_counter][nodes_label] = glob_num_nodes
+            # and the monte carlo trials too
+            measurements[measurement_counter][trials_label] = glob_trials_matdim
         elif parse_matmul_exec_type_time(line) is not None:
             # line contains serial/parallel keyword and the execution time
             result = parse_matmul_exec_type_time(line)
@@ -93,8 +106,10 @@ def log_file_to_dataframe(log_content_list):
             # add the execution type and the time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][execution_type] = time
-            # and the nodes_number label too
+            # and the number of MPI nodes
             measurements[measurement_counter][nodes_label] = glob_num_nodes
+            # and the matricies dimension too
+            measurements[measurement_counter][matdim_label] = glob_trials_matdim
         elif parse_end(line) is not None:
             # line contains 'End' marker, end of this measurement reached
             measurement_counter += 1
