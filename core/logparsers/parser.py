@@ -6,14 +6,14 @@ import pandas as pd
 
 # global variable for the number of MPI nodes
 glob_num_nodes = 0
-# global variable for monte carlo 'trials' or matmul 'square matricies dimension'
+# global variable for 'monte carlo trials' or matmul 'square matricies dimension'
 glob_trials_matdim = 0
 # constant label for the number of MPI nodes
-nodes_label = 'nodes_number'
+nodes_label = 'number_mpi_slots'
 # constant label for the square matricies dimension
 matdim_label = 'mat_dim'
 # constant label for monte carlo trials
-trials_label = 'trials'
+trials_label = 'mc_trials'
 
 def has_mo_match(matched_object):
     '''Determine if matched_object is None or not'''
@@ -90,7 +90,7 @@ def log_file_to_dataframe(log_content_list):
         if parse_monte_carlo_time(line) is not None:
             # line contains the time of the slowest processor, let's save it
             time = parse_monte_carlo_time(line)
-            slowest_label = 'slowest_node_mc_pi'
+            slowest_label = 'execution_time_slowest_node'
             # add the Slowest label and the parsed time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
             measurements[measurement_counter][slowest_label] = time
@@ -101,7 +101,7 @@ def log_file_to_dataframe(log_content_list):
         elif parse_matmul_exec_type_time(line) is not None:
             # line contains serial/parallel keyword and the execution time
             result = parse_matmul_exec_type_time(line)
-            execution_type = result[0] + '_matmul'
+            execution_type = 'tot_execution_time_' + result[0] + '_matmul'
             time = result[1]
             # add the execution type and the time to measurements dict
             # having measurement_counter index. This yelds to a dict of dicts
@@ -115,8 +115,8 @@ def log_file_to_dataframe(log_content_list):
             measurement_counter += 1
     # convert the measurements dict to a DataFrame
     df = pd.DataFrame(measurements).T
-    # rename the df default index to Measurements
-    df.index.name = 'Measurements'
+    # rename the df default index to measurements
+    df.index.name = 'measurements'
     return df
 
 # define a couple of user-oriented messages
