@@ -155,6 +155,10 @@ See [here](https://github.com/Nico769/HPCA-Project-Code/tree/master/benchmark_re
 
 [Online CSV merge utility](http://merge-csv.com/)
 
+## Extra
+
+We also tested the famous [Graph500](https://github.com/graph500/graph500) benchmark suite. Click [here](https://github.com/Nico769/HPCA-Project-Code/tree/master/graph500_results) for further info.
+
 ## License
 
 MIT - see [LICENSE](https://github.com/Nico769/HPCA-Project-Code/blob/master/LICENSE) © Francesco Casciola, Elia Giuseppe Ceroni, Nicola Landolfi
