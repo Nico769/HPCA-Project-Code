@@ -6,7 +6,7 @@
         python matmul.py [matrix_dimension]
 
         Options:
-               -matrix_dimension    the dimension of the square matricies.
+               -matrix_dimension    the dimension of the square matrices.
     
    The names of the matrices start with an uppercase.
 	
@@ -25,7 +25,7 @@ def matrixmul(A, B, tile_width, mat_dim):
     return Partial
 
 if __name__ == "__main__":
-    # Check if the matricies dimension has been supplied via
+    # Check if the matrices dimension has been supplied via
     # the CLI. If not, use 128 as default value.
     mat_dim = int(argv[1]) if len(argv) > 1 else 128
     # Rename default channel for convenience

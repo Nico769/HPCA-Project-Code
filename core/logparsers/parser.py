@@ -6,11 +6,11 @@ import pandas as pd
 
 # global variable for the number of MPI nodes
 glob_num_nodes = 0
-# global variable for 'monte carlo trials' or matmul 'square matricies dimension'
+# global variable for 'monte carlo trials' or matmul 'square matrices dimension'
 glob_trials_matdim = 0
 # constant label for the number of MPI nodes
 nodes_label = 'number_mpi_slots'
-# constant label for the square matricies dimension
+# constant label for the square matrices dimension
 matdim_label = 'mat_dim'
 # constant label for monte carlo trials
 trials_label = 'mc_trials'
@@ -72,7 +72,7 @@ def sanitize_filename(name):
     # store the tokenized number of MPI nodes
     global glob_num_nodes
     glob_num_nodes = tokenized_name[1]
-    # store the tokenized monte carlo trials or matmul matricies dimension
+    # store the tokenized monte carlo trials or matmul matrices dimension
     global glob_trials_matdim
     glob_trials_matdim = tokenized_name[2]
     # return True and csv_filename since the validation has been successful
@@ -108,7 +108,7 @@ def log_file_to_dataframe(log_content_list):
             measurements[measurement_counter][execution_type] = time
             # and the number of MPI nodes
             measurements[measurement_counter][nodes_label] = glob_num_nodes
-            # and the matricies dimension too
+            # and the matrices dimension too
             measurements[measurement_counter][matdim_label] = glob_trials_matdim
         elif parse_end(line) is not None:
             # line contains 'End' marker, end of this measurement reached

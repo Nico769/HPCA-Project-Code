@@ -32,7 +32,7 @@ Once your MPI environment has been set up, make sure the cluster shared folder i
 
 ```
 
-```mat_mul_runner.sh``` runs the ```algos/matmul.py``` for ```TEST``` times and several matrices dimensions, as well as different values of ```NODES``` (see the script), logging the ```matmul.py``` output onto a text file with the following naming convention: ```mpi.NUMBER_OF_NODES.SQUARE_MATRICIES_DIMENSION.log```
+```mat_mul_runner.sh``` runs the ```algos/matmul.py``` for ```TEST``` times and several matrices dimensions, as well as different values of ```NODES``` (see the script), logging the ```matmul.py``` output onto a text file with the following naming convention: ```mpi.NUMBER_OF_NODES.SQUARE_MATRICES_DIMENSION.log```
 
 ```all_logs_to_csv.sh``` invokes ```logparsers/parser.py``` for each log file stored in ```$HOME/cloud/core/logparsers/logs/``` (which is created when one of the previous scripts run for the first time) which will parse your log files and generate a ```LOG_FILE_NAME.csv``` csv file.
 
@@ -93,7 +93,7 @@ For Monte Carlo estimation of Pi, there were executed four runs for each number 
 
 For Matrix Multiplication the executed tests are:
 
-| Number of runs/tests | Number of MPI slots/nodes | Matricies dimension |
+| Number of runs/tests | Number of MPI slots/nodes | Matrices dimension |
 | -------------------- | ------------------------- | ------------------- |
 | 1                    | 1                         | 512                 |
 | 4                    | 4 8 16 32                 | 512                 |
